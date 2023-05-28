@@ -11,10 +11,14 @@ import javax.swing.ImageIcon;
 import java.awt.Color;
 import javax.swing.JTextField;
 import com.toedter.calendar.JDateChooser;
+
+import modelo.Reserva;
+
 import java.awt.Font;
 import javax.swing.JComboBox;
 import javax.swing.DefaultComboBoxModel;
 import java.text.Format;
+import java.util.Date;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -37,6 +41,11 @@ public class ReservasView extends JFrame {
 	int xMouse, yMouse;
 	private JLabel labelExit;
 	private JLabel labelAtras;
+	
+	//Información para la DB
+	public Date fecha_ingreso = null;
+	public Date fecha_salida = null;
+	public int valorHospedaje;
 
 	/**
 	 * Launch the application.
@@ -264,7 +273,21 @@ public class ReservasView extends JFrame {
 		txtFechaSalida.setFont(new Font("Roboto", Font.PLAIN, 18));
 		txtFechaSalida.addPropertyChangeListener(new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent evt) {
-				//Activa el evento, después del usuario seleccionar las fechas se debe calcular el valor de la reserva
+				//Activa el evento, después del usuario seleccionar las fechas se debe calcular el valor de la reserva				
+				Reserva reserva = new Reserva();
+				
+				try {
+					fecha_ingreso = txtFechaEntrada.getDate();//Obtiene la fecha de ingreso del cliente
+					fecha_salida = txtFechaSalida.getDate();//Obtiene la fecha de salida
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				
+				if (fecha_ingreso != null && fecha_salida != null) {
+					valorHospedaje = (int) reserva.diasHospedaje(fecha_ingreso, fecha_salida); //Cálcula el valor de la estadía
+					txtValor.setText(String.valueOf(valorHospedaje));
+				}
+				
 			}
 		});
 		txtFechaSalida.setDateFormatString("yyyy-MM-dd");
@@ -293,10 +316,22 @@ public class ReservasView extends JFrame {
 		panel.add(txtFormaPago);
 
 		JPanel btnsiguiente = new JPanel();
+		btnsiguiente.setToolTipText("");
+		JLabel labelSiguiente = new JLabel("Siguiente");
+		labelSiguiente.setHorizontalAlignment(SwingConstants.CENTER);
+		labelSiguiente.setForeground(Color.WHITE);
+		labelSiguiente.setFont(new Font("Roboto", Font.PLAIN, 18));
+		labelSiguiente.setBounds(0, 0, 122, 35);
+		btnsiguiente.add(labelSiguiente);
 		btnsiguiente.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if (ReservasView.txtFechaEntrada.getDate() != null && ReservasView.txtFechaSalida.getDate() != null) {		
+				if (ReservasView.txtFechaEntrada.getDate() != null && ReservasView.txtFechaSalida.getDate() != null) {
+					String formaPago = (String) txtFormaPago.getSelectedItem();
+					Reserva reserva = new Reserva(valorHospedaje, formaPago, fecha_ingreso, fecha_salida);
+					
+					System.out.println(reserva.getFormaPago());
+					
 					RegistroHuesped registro = new RegistroHuesped();
 					registro.setVisible(true);
 				} else {
