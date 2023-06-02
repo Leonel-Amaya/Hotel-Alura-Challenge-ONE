@@ -7,7 +7,9 @@ import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
+import dao.HuespedDao;
 import dao.ReservaDao;
+import modelo.Huesped;
 import modelo.Reserva;
 
 import javax.swing.JTable;
@@ -130,6 +132,7 @@ public class Busqueda extends JFrame {
 		JScrollPane scroll_tableHuespedes = new JScrollPane(tbHuespedes);
 		panel.addTab("Huéspedes", new ImageIcon(Busqueda.class.getResource("/imagenes/pessoas.png")), scroll_tableHuespedes, null);
 		scroll_tableHuespedes.setVisible(true);
+		llenarDatosHuespedes();
 		
 		JLabel lblNewLabel_2 = new JLabel("");
 		lblNewLabel_2.setIcon(new ImageIcon(Busqueda.class.getResource("/imagenes/Ha-100px.png")));
@@ -296,6 +299,32 @@ public class Busqueda extends JFrame {
 					fechaFormateada.format(reserva.getFecha_salida()),
 					reserva.getValor(),
 					reserva.getFormaPago()
+			};
+			modelo.addRow(fila);
+		}
+	}
+	
+	private void llenarDatosHuespedes() {
+		EntityManagerFactory factory = Persistence.createEntityManagerFactory("pruebahotel");
+		EntityManager em = factory.createEntityManager();
+		HuespedDao huespedDao = new HuespedDao(em);
+		
+		DefaultTableModel modelo = (DefaultTableModel) tbHuespedes.getModel();
+		modelo.setRowCount(0);
+		
+		List<Huesped> huespedes = huespedDao.listarHuespedes();
+		
+		SimpleDateFormat fechaFormateada = new SimpleDateFormat("dd-MM-yyyy");
+		
+		for(Huesped huesped : huespedes) {
+			Object[] fila = {
+					huesped.getId(),
+					huesped.getNombre(),
+					huesped.getApellido(),
+					fechaFormateada.format(huesped.getBirthday()),
+					huesped.getNacionalidad(),
+					huesped.getTelefono(),
+					huesped.getReserva().getId()
 			};
 			modelo.addRow(fila);
 		}
