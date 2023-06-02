@@ -272,6 +272,7 @@ public class Busqueda extends JFrame {
 		setResizable(false);
 	}
 	
+	//Método que añade los datos de la DB a la tabla y los muestra
 	private void llenarTablaReservas() {
 		EntityManagerFactory factory = Persistence.createEntityManagerFactory("pruebahotel");
 		EntityManager em = factory.createEntityManager();
