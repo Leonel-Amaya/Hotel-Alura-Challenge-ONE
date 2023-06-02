@@ -12,10 +12,14 @@ import java.awt.Color;
 import javax.swing.JTextField;
 import com.toedter.calendar.JDateChooser;
 
+import dao.ReservaDao;
 import modelo.Reserva;
 
 import java.awt.Font;
 import javax.swing.JComboBox;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import javax.swing.DefaultComboBoxModel;
 import java.text.Format;
 import java.util.Date;
@@ -46,6 +50,11 @@ public class ReservasView extends JFrame {
 	public Date fecha_ingreso = null;
 	public Date fecha_salida = null;
 	public int valorHospedaje;
+	public Long id;
+
+	public Long getId() {
+		return id;
+	}
 
 	/**
 	 * Launch the application.
@@ -327,13 +336,31 @@ public class ReservasView extends JFrame {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (ReservasView.txtFechaEntrada.getDate() != null && ReservasView.txtFechaSalida.getDate() != null) {
+					//
+					EntityManagerFactory factory = Persistence.createEntityManagerFactory("pruebahotel");
+					EntityManager em = factory.createEntityManager();
 					String formaPago = (String) txtFormaPago.getSelectedItem();
 					Reserva reserva = new Reserva(valorHospedaje, formaPago, fecha_ingreso, fecha_salida);
+					ReservaDao reservaDao = new ReservaDao(em);
 					
+					em.getTransaction().begin();
+					
+					reservaDao.guardar(reserva);
+					
+					em.getTransaction().commit();
+					em.close();
+					
+					
+					//
 					System.out.println(reserva.getFormaPago());
+					id = reserva.getId();
+					System.out.println(id);
 					
-					RegistroHuesped registro = new RegistroHuesped();
+					JOptionPane.showMessageDialog(null, "La reserva se generó con ID: " + id);
+					
+					RegistroHuesped registro = new RegistroHuesped(reserva);
 					registro.setVisible(true);
+					dispose();
 				} else {
 					JOptionPane.showMessageDialog(null, "Debes llenar todos los campos.");
 				}

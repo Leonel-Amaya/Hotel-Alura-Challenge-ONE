@@ -7,11 +7,22 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.JTextField;
 import java.awt.Color;
 import com.toedter.calendar.JDateChooser;
+
+import dao.HuespedDao;
+import dao.ReservaDao;
+import modelo.Huesped;
+import modelo.Reserva;
+
 import javax.swing.JComboBox;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import java.awt.Font;
+import java.awt.HeadlessException;
+
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import java.awt.SystemColor;
@@ -20,6 +31,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.text.Format;
+import java.util.Date;
 import java.awt.event.ActionEvent;
 import java.awt.Toolkit;
 import javax.swing.SwingConstants;
@@ -38,6 +50,9 @@ public class RegistroHuesped extends JFrame {
 	private JLabel labelExit;
 	private JLabel labelAtras;
 	int xMouse, yMouse;
+	private ReservaDao reservaDao;
+	
+	private Reserva reserva;
 
 	/**
 	 * Launch the application.
@@ -46,7 +61,7 @@ public class RegistroHuesped extends JFrame {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					RegistroHuesped frame = new RegistroHuesped();
+					RegistroHuesped frame = new RegistroHuesped(null);
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -58,7 +73,9 @@ public class RegistroHuesped extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public RegistroHuesped() {
+	public RegistroHuesped(Reserva reserva) {
+		this.reserva = reserva;
+		this.reservaDao = new ReservaDao();
 		
 		setIconImage(Toolkit.getDefaultToolkit().getImage(RegistroHuesped.class.getResource("/imagenes/lOGO-50PX.png")));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -211,6 +228,17 @@ public class RegistroHuesped extends JFrame {
 		txtNreserva.setBackground(Color.WHITE);
 		txtNreserva.setBorder(javax.swing.BorderFactory.createEmptyBorder());
 		contentPane.add(txtNreserva);
+		//Extrayendo el id generado	
+		try {
+//			String numeroReserva = String.valueOf(idReserva);
+//			txtNreserva.setText(numeroReserva);
+			
+			String idReserva = reserva.getId().toString();
+			txtNreserva.setText(idReserva);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		
 		JSeparator separator_1_2 = new JSeparator();
 		separator_1_2.setBounds(560, 170, 289, 2);
@@ -253,6 +281,7 @@ public class RegistroHuesped extends JFrame {
 		btnguardar.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
+				guardarHuesped();
 			}
 		});
 		btnguardar.setLayout(null);
@@ -313,6 +342,40 @@ public class RegistroHuesped extends JFrame {
 		labelExit.setHorizontalAlignment(SwingConstants.CENTER);
 		labelExit.setForeground(SystemColor.black);
 		labelExit.setFont(new Font("Roboto", Font.PLAIN, 18));
+	}
+	
+	private void guardarHuesped() {
+		try {
+			String nombre = txtNombre.getText();
+			String apellido = txtApellido.getText();
+			Date birthday = txtFechaN.getDate();
+			String nacionalidad = (String) txtNacionalidad.getSelectedItem();
+			String telefono = txtTelefono.getText();
+			
+			EntityManagerFactory factory = Persistence.createEntityManagerFactory("pruebahotel");
+			EntityManager em = factory.createEntityManager();
+			
+			Huesped huesped = new Huesped(nombre, apellido, birthday, nacionalidad, telefono);
+			HuespedDao huespedDao = new HuespedDao(em);
+			
+			em.getTransaction().begin();
+			
+			huesped.setReserva(reserva);
+			huespedDao.guardar(huesped);
+			
+			em.getTransaction().commit();
+			
+			//Notificación de éxito
+			JOptionPane.showMessageDialog(null, "El huesped ha sido registrado");
+			
+			//Redirección
+			MenuUsuario menuUsuario = new MenuUsuario();
+			menuUsuario.setVisible(true);
+			dispose();
+			
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
 	}
 	
 	

@@ -30,6 +30,10 @@ public class Reserva {
 		this.fecha_salida = fecha_salida;
 	}
 
+	public Long getId() {
+		return id;
+	}
+
 	public int getValor() {
 		return valor;
 	}
