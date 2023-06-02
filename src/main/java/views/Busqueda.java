@@ -6,15 +6,23 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+
+import dao.ReservaDao;
+import modelo.Reserva;
+
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JButton;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import javax.swing.ImageIcon;
 import java.awt.Color;
 import java.awt.SystemColor;
 import javax.swing.JLabel;
 import java.awt.Font;
 import java.awt.event.ActionListener;
+import java.util.Iterator;
 import java.util.List;
 import java.awt.event.ActionEvent;
 import javax.swing.JTabbedPane;
@@ -25,6 +33,7 @@ import javax.swing.ListSelectionModel;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import java.text.SimpleDateFormat;
 
 @SuppressWarnings("serial")
 public class Busqueda extends JFrame {
@@ -104,6 +113,7 @@ public class Busqueda extends JFrame {
 		JScrollPane scroll_table = new JScrollPane(tbReservas);
 		panel.addTab("Reservas", new ImageIcon(Busqueda.class.getResource("/imagenes/reservado.png")), scroll_table, null);
 		scroll_table.setVisible(true);
+		llenarTablaReservas();
 		
 		
 		tbHuespedes = new JTable();
@@ -260,6 +270,34 @@ public class Busqueda extends JFrame {
 		lblEliminar.setBounds(0, 0, 122, 35);
 		btnEliminar.add(lblEliminar);
 		setResizable(false);
+	}
+	
+	private void llenarTablaReservas() {
+		EntityManagerFactory factory = Persistence.createEntityManagerFactory("pruebahotel");
+		EntityManager em = factory.createEntityManager();
+		ReservaDao reservaDao = new ReservaDao(em);
+		
+		//
+		DefaultTableModel modelo = (DefaultTableModel) tbReservas.getModel();
+		modelo.setRowCount(0); //Limpia la tabla antes de llenarla nuevamente
+		
+		//Obtener todas las reservas de la base de datos
+		List<Reserva> reservas = reservaDao.listarDatos();
+		
+		//Formateando la fecha
+		SimpleDateFormat fechaFormateada = new SimpleDateFormat("dd-MM-yyyy");
+		
+		//Llenar el JTable con los datos de las reservas
+		for(Reserva reserva : reservas) {
+			Object[] fila = {
+					reserva.getId(),
+					fechaFormateada.format(reserva.getFecha_ingreso()),
+					fechaFormateada.format(reserva.getFecha_salida()),
+					reserva.getValor(),
+					reserva.getFormaPago()
+			};
+			modelo.addRow(fila);
+		}
 	}
 	
 //Código que permite mover la ventana por la pantalla según la posición de "x" y "y"
