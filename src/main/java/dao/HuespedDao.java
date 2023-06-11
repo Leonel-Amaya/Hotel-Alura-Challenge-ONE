@@ -29,4 +29,11 @@ public class HuespedDao {
 		huesped = this.em.merge(huesped);
 		this.em.remove(huesped);
 	}
+	
+	public void eliminarMedianteReserva(Long reservaId) {
+		String jpql = "DELETE FROM Huesped H WHERE H.reserva.id=:reservaId";
+		this.em.createQuery(jpql)
+				.setParameter("reservaId", reservaId)
+				.executeUpdate();
+	}
 }

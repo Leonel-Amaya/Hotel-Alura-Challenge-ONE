@@ -6,6 +6,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
+import dao.HuespedDao;
 import dao.ReservaDao;
 import modelo.Reserva;
 
@@ -48,8 +49,10 @@ public class ReservaController {
 	
 	public void eliminarReserva(Long id) {
 		Reserva reserva = this.em.find(Reserva.class, id);
-		System.out.println(reserva.getFormaPago());
+		Long reservaId = reserva.getId();
 		ReservaDao reservaDao = new ReservaDao(em);
 		reservaDao.eliminarReserva(reserva);
+		HuespedDao huespedDao = new HuespedDao(em);
+		huespedDao.eliminarMedianteReserva(reservaId);
 	}
 }
