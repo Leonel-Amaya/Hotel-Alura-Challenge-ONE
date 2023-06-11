@@ -18,9 +18,15 @@ public class HuespedDao {
 		this.em.persist(huesped);
 	}
 	
+	// Método que trae los datos de la DB y los enlista
 	public List<Huesped> listarHuespedes() {
 		Query query = em.createQuery("SELECT h FROM Huesped h");
 		List<Huesped> huesped = query.getResultList();
 		return huesped;
+	}
+
+	public void eliminarHuesped(Huesped huesped) {
+		huesped = this.em.merge(huesped);
+		this.em.remove(huesped);
 	}
 }

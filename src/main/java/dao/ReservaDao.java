@@ -5,6 +5,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
 
+import modelo.Huesped;
 import modelo.Reserva;
 
 public class ReservaDao {
@@ -26,6 +27,11 @@ public class ReservaDao {
 		Query query = em.createQuery("SELECT r FROM Reserva r");
 		List<Reserva> reservas = query.getResultList();
 		return reservas;
+	}
+	
+	public void eliminarReserva(Reserva reserva) {
+		reserva = this.em.merge(reserva);
+		this.em.remove(reserva);
 	}
 
 }

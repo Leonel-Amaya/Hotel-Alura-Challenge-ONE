@@ -7,6 +7,8 @@ import javax.swing.JScrollPane;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
+import controller.HuespedController;
+import controller.ReservaController;
 import dao.HuespedDao;
 import dao.ReservaDao;
 import modelo.Huesped;
@@ -22,10 +24,13 @@ import javax.swing.ImageIcon;
 import java.awt.Color;
 import java.awt.SystemColor;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+
 import java.awt.Font;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.awt.event.ActionEvent;
 import javax.swing.JTabbedPane;
 import java.awt.Toolkit;
@@ -115,7 +120,7 @@ public class Busqueda extends JFrame {
 		JScrollPane scroll_table = new JScrollPane(tbReservas);
 		panel.addTab("Reservas", new ImageIcon(Busqueda.class.getResource("/imagenes/reservado.png")), scroll_table, null);
 		scroll_table.setVisible(true);
-		llenarTablaReservas();
+		llenarDatosReservas();
 		
 		
 		tbHuespedes = new JTable();
@@ -267,6 +272,16 @@ public class Busqueda extends JFrame {
 		contentPane.add(btnEliminar);
 		
 		JLabel lblEliminar = new JLabel("ELIMINAR");
+		lblEliminar.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				eliminar(panel);
+				limpiarTabla(modelo);
+				limpiarTabla(modeloHuesped);
+				llenarDatosReservas();
+				llenarDatosHuespedes();
+			}
+		});
 		lblEliminar.setHorizontalAlignment(SwingConstants.CENTER);
 		lblEliminar.setForeground(Color.WHITE);
 		lblEliminar.setFont(new Font("Roboto", Font.PLAIN, 18));
@@ -276,7 +291,7 @@ public class Busqueda extends JFrame {
 	}
 	
 	//Método que añade los datos de la DB a la tabla y los muestra
-	private void llenarTablaReservas() {
+	private void llenarDatosReservas() {
 		EntityManagerFactory factory = Persistence.createEntityManagerFactory("pruebahotel");
 		EntityManager em = factory.createEntityManager();
 		ReservaDao reservaDao = new ReservaDao(em);
@@ -328,6 +343,74 @@ public class Busqueda extends JFrame {
 			};
 			modelo.addRow(fila);
 		}
+	}
+	
+	private boolean tieneFilaElegida(int panel) {
+		if (panel == 0) {
+			return tbReservas.getSelectedRowCount() == 0 || tbReservas.getSelectedColumnCount() == 0;
+		} else {
+			return tbHuespedes.getSelectedRowCount() == 0 || tbHuespedes.getSelectedColumnCount() == 0;
+		}
+	}
+	
+	//Permite eliminar el registro
+	private void eliminar(JTabbedPane panel) {
+		EntityManagerFactory factory = Persistence.createEntityManagerFactory("pruebahotel");
+		EntityManager em = factory.createEntityManager();
+		HuespedController huespedController = new HuespedController(em);
+		ReservaController reservaController = new ReservaController(em);
+		
+		if(tieneFilaElegida(panel.getSelectedIndex())) {
+			JOptionPane.showMessageDialog(this, "Selecciona una fila");
+			return;
+		}
+		if(panel.getSelectedIndex() == 0) {
+			Optional.ofNullable(modelo.getValueAt(tbReservas.getSelectedRow(), tbReservas.getSelectedColumn()))
+			.ifPresentOrElse(fila -> {
+				Long id = Long.parseLong(modelo.getValueAt(tbReservas.getSelectedRow(), 0).toString());
+				System.out.println("Fila seleccionada " + id);
+				//
+				em.getTransaction().begin();
+				
+				reservaController.eliminarReserva(id);
+				
+				em.getTransaction().commit();
+				//
+				modelo.removeRow(tbReservas.getSelectedRow());
+				
+				JOptionPane.showMessageDialog(this,
+						String.format("El item con id %d eliminado con éxito!", id));
+			}, () -> JOptionPane.showMessageDialog(this, "Por favor, elije un item"));
+		} else {
+			Optional.ofNullable(modeloHuesped.getValueAt(tbHuespedes.getSelectedRow(), tbHuespedes.getSelectedColumn()))
+			.ifPresentOrElse(fila -> {
+				Long id = Long.parseLong(modeloHuesped.getValueAt(tbHuespedes.getSelectedRow(), 0).toString());
+				System.out.println("Id seleccionado de Huespedes " + id);
+				//
+				em.getTransaction().begin();
+				
+				huespedController.eliminarRegistro(id);
+				
+				em.getTransaction().commit();
+				//
+				modelo.removeRow(tbHuespedes.getSelectedRow());
+
+				JOptionPane.showMessageDialog(this,
+						String.format("El item eliminado con éxito!"));
+			}, () -> JOptionPane.showMessageDialog(this, "Por favor, elije un item"));
+		}
+	}
+	
+	//Permite editar los datos de un registro
+	private void editar(JTabbedPane panel) {
+		if(tieneFilaElegida(panel.getSelectedIndex())) {
+			JOptionPane.showMessageDialog(this, "Selecciona una fila");
+			return;
+		}
+	}
+	
+	private void limpiarTabla(DefaultTableModel modelo) {
+		modelo.getDataVector().clear();
 	}
 	
 //Código que permite mover la ventana por la pantalla según la posición de "x" y "y"

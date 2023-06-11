@@ -10,6 +10,15 @@ import dao.ReservaDao;
 import modelo.Reserva;
 
 public class ReservaController {
+	EntityManager em;
+	
+	
+	public ReservaController(EntityManager em) {
+		this.em = em;
+	}
+
+
+	/*
 	private static int valorHospedaje;
 	private static String formaPago;
 	private static Date fecha_ingreso;
@@ -35,6 +44,12 @@ public class ReservaController {
 		
 		em.getTransaction().commit();
 		em.close();
-	}
+	}*/
 	
+	public void eliminarReserva(Long id) {
+		Reserva reserva = this.em.find(Reserva.class, id);
+		System.out.println(reserva.getFormaPago());
+		ReservaDao reservaDao = new ReservaDao(em);
+		reservaDao.eliminarReserva(reserva);
+	}
 }
