@@ -464,6 +464,8 @@ public class Busqueda extends JFrame {
 			Optional.ofNullable(modeloHuesped.getValueAt(tbHuespedes.getSelectedRow(), tbHuespedes.getSelectedColumn()))
 			.ifPresentOrElse(fila -> {
 				
+				HuespedDao huespedDao = new HuespedDao(em);
+				
 				try {
 					
 					Long id = Long.parseLong(modeloHuesped.getValueAt(tbHuespedes.getSelectedRow(), 0).toString());
@@ -481,6 +483,14 @@ public class Busqueda extends JFrame {
 					System.out.println(apellido);
 					System.out.println(fechaNacimiento);
 					System.out.println(telefono);
+					
+					//
+					em.getTransaction().begin();
+					
+					huespedDao.actualizarHuesped(id, nombre, apellido, fechaNacimiento, telefono);
+					
+					em.getTransaction().commit();
+					//
 					
 					JOptionPane.showMessageDialog(this,
 						String.format("Item con %d editado con éxito!", id));

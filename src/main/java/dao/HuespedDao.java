@@ -44,6 +44,7 @@ public class HuespedDao {
 			
 			if(huesped == null) {
 				System.out.println("No se encontró el objeto con ID: " + id);
+				return;
 			}
 			
 			huesped.setNombre(nombre);
