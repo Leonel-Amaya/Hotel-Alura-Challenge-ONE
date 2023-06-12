@@ -28,6 +28,7 @@ import javax.swing.JOptionPane;
 
 import java.awt.Font;
 import java.awt.event.ActionListener;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -258,6 +259,14 @@ public class Busqueda extends JFrame {
 		contentPane.add(btnEditar);
 		
 		JLabel lblEditar = new JLabel("EDITAR");
+		lblEditar.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				editar(panel);
+				limpiarTabla(modelo);
+				llenarDatosReservas();
+			}
+		});
 		lblEditar.setHorizontalAlignment(SwingConstants.CENTER);
 		lblEditar.setForeground(Color.WHITE);
 		lblEditar.setFont(new Font("Roboto", Font.PLAIN, 18));
@@ -406,6 +415,82 @@ public class Busqueda extends JFrame {
 		if(tieneFilaElegida(panel.getSelectedIndex())) {
 			JOptionPane.showMessageDialog(this, "Selecciona una fila");
 			return;
+		}
+		
+		EntityManagerFactory factory = Persistence.createEntityManagerFactory("pruebahotel");
+		EntityManager em = factory.createEntityManager();
+		
+		SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy");
+		
+		if(panel.getSelectedIndex() == 0) {
+			Optional.ofNullable(modelo.getValueAt(tbReservas.getSelectedRow(), tbReservas.getSelectedColumn()))
+			.ifPresentOrElse(fila -> {
+				
+				Reserva reserva = new Reserva();
+				ReservaDao reservaDao = new ReservaDao(em);
+				
+				try {
+					Long id = Long.parseLong(modelo.getValueAt(tbReservas.getSelectedRow(), 0).toString());
+					
+					Date dateCheckIn = format.parse(modelo.getValueAt(tbReservas.getSelectedRow(), 1).toString());
+					
+					Date dateCheckOut = format.parse(modelo.getValueAt(tbReservas.getSelectedRow(), 2).toString());
+					
+					int valor = (int) reserva.diasHospedaje(dateCheckIn, dateCheckOut);
+					
+					System.out.println(id);
+					System.out.println(dateCheckIn);
+					System.out.println(dateCheckOut);
+					System.out.println(valor);
+					
+					
+					
+					em.getTransaction().begin();
+					
+					reservaDao.actualizarReserva(id, valor, dateCheckIn, dateCheckOut);
+					
+					em.getTransaction().commit();
+					
+					JOptionPane.showMessageDialog(this,
+							String.format("Item con %d editado con éxito!", id));
+					
+					
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				
+			}, () -> JOptionPane.showMessageDialog(this, "Por favor, elije un item"));
+		} else {
+			Optional.ofNullable(modeloHuesped.getValueAt(tbHuespedes.getSelectedRow(), tbHuespedes.getSelectedColumn()))
+			.ifPresentOrElse(fila -> {
+				
+				try {
+					
+					Long id = Long.parseLong(modeloHuesped.getValueAt(tbHuespedes.getSelectedRow(), 0).toString());
+					
+					String nombre = modeloHuesped.getValueAt(tbHuespedes.getSelectedRow(), 1).toString();
+					
+					String apellido = modeloHuesped.getValueAt(tbHuespedes.getSelectedRow(), 2).toString();
+					
+					Date fechaNacimiento = format.parse(modeloHuesped.getValueAt(tbHuespedes.getSelectedRow(), 3).toString());
+					
+					String telefono = modeloHuesped.getValueAt(tbHuespedes.getSelectedRow(), 5).toString();
+					
+					System.out.println(id);
+					System.out.println(nombre);
+					System.out.println(apellido);
+					System.out.println(fechaNacimiento);
+					System.out.println(telefono);
+					
+					JOptionPane.showMessageDialog(this,
+						String.format("Item con %d editado con éxito!", id));
+					
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+
+				
+			}, () -> JOptionPane.showMessageDialog(this, "Por favor, elije un item"));
 		}
 	}
 	

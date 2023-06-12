@@ -1,5 +1,6 @@
 package dao;
 
+import java.util.Date;
 import java.util.List;
 
 import javax.persistence.EntityManager;
@@ -35,5 +36,23 @@ public class HuespedDao {
 		this.em.createQuery(jpql)
 				.setParameter("reservaId", reservaId)
 				.executeUpdate();
+	}
+	
+	public void actualizarHuesped(Long id, String nombre, String apellido, Date fechaNacimiento, String telefono) {
+		try {
+			Huesped huesped = this.em.find(Huesped.class, id);
+			
+			if(huesped == null) {
+				System.out.println("No se encontró el objeto con ID: " + id);
+			}
+			
+			huesped.setNombre(nombre);
+			huesped.setApellido(apellido);
+			huesped.setBirthday(fechaNacimiento);
+			huesped.setTelefono(telefono);
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
