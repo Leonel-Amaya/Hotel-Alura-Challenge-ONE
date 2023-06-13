@@ -28,6 +28,7 @@ import javax.swing.JOptionPane;
 
 import java.awt.Font;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -234,8 +235,7 @@ public class Busqueda extends JFrame {
 		JPanel btnbuscar = new JPanel();
 		btnbuscar.addMouseListener(new MouseAdapter() {
 			@Override
-			public void mouseClicked(MouseEvent e) {
-
+			public void mouseClicked(MouseEvent e) {		
 			}
 		});
 		btnbuscar.setLayout(null);
@@ -245,6 +245,36 @@ public class Busqueda extends JFrame {
 		contentPane.add(btnbuscar);
 		
 		JLabel lblBuscar = new JLabel("BUSCAR");
+		lblBuscar.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				try {
+					String consulta = txtBuscar.getText().trim();
+				
+					EntityManagerFactory factory = Persistence.createEntityManagerFactory("pruebahotel");
+					EntityManager em = factory.createEntityManager();
+					
+					HuespedDao huespedDao = new HuespedDao(em);
+					List<Huesped> listaHuesped = huespedDao.buscandoHuesped(consulta); 
+					limpiarTabla(modelo);
+					limpiarTabla(modeloHuesped);
+					
+					List<Reserva> listaReserva = new ArrayList<>();
+					for(Huesped huesped : listaHuesped) {
+						listaReserva.add(huesped.getReserva());
+					}
+					
+					System.out.println(listaReserva);
+					
+					fillTableReserva(listaReserva, modelo);
+					fillTableHuesped(listaHuesped, modeloHuesped);
+					
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				
+			}
+		});
 		lblBuscar.setBounds(0, 0, 122, 35);
 		btnbuscar.add(lblBuscar);
 		lblBuscar.setHorizontalAlignment(SwingConstants.CENTER);
@@ -506,6 +536,28 @@ public class Busqueda extends JFrame {
 	
 	private void limpiarTabla(DefaultTableModel modelo) {
 		modelo.getDataVector().clear();
+	}
+	
+	private void fillTableHuesped(List<Huesped> data, DefaultTableModel model) {
+		data.forEach(h -> model.addRow(new Object[] {
+				h.getId(),
+				h.getNombre(),
+				h.getApellido(),
+				h.getBirthday(),
+				h.getNacionalidad(),
+				h.getTelefono(),
+				h.getReserva().getId()
+		}));
+	}
+	
+	private void fillTableReserva(List<Reserva> data, DefaultTableModel model) {
+		data.forEach(r -> modelo.addRow(new Object[] {
+				r.getId(),
+				r.getFecha_ingreso(),
+				r.getFecha_salida(),
+				r.getValor(),
+				r.getFormaPago()
+		}));
 	}
 	
 //Código que permite mover la ventana por la pantalla según la posición de "x" y "y"

@@ -5,6 +5,7 @@ import java.util.List;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 
 import modelo.Huesped;
 
@@ -55,5 +56,38 @@ public class HuespedDao {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public List<Huesped> buscandoHuesped(String consulta) {
+		String jpql = "SELECT h FROM Huesped h JOIN h.reserva r WHERE ";
+		
+		List<Huesped> resultados = null;
+		
+		if(consulta.matches("\\d+")) {
+			// Si el término de búsqueda es un número, buscar por ID de reserva
+			jpql += "r.id = :reservaId";
+		} else {
+			// Si el término de búsqueda es una cadena, buscar por apellido de huesped
+		    jpql += "h.apellido LIKE :apellido";
+		}
+		
+		try {
+			TypedQuery<Huesped> query = this.em.createQuery(jpql, Huesped.class);
+			
+			if (consulta.matches("\\d+")) {
+		        // Si se busca por ID de reserva, asignar el valor a :reservaId
+		        query.setParameter("reservaId", Long.parseLong(consulta));
+		    } else {
+		        // Si se busca por apellido de huesped, asignar el valor a :apellido
+		        query.setParameter("apellido", "%" + consulta + "%");
+		    }
+			
+			resultados = query.getResultList();
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
+		return resultados;
 	}
 }
